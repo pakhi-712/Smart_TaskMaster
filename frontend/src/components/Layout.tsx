@@ -165,7 +165,7 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
 
   function renderContent() {
     if (activeView === "dashboard") {
-      return <Dashboard stats={stats} />;
+      return <Dashboard />;
     }
 
     if (activeView === "calendar") {
@@ -211,9 +211,18 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
           <h2 className="page-title">{getPageTitle()}</h2>
           <div className="top-bar-actions">
             <span className="user-greeting">Hi, {userName}</span>
-            <button className="icon-button" onClick={onToggleDarkMode}>
-              {darkMode ? "☀️" : "🌙"}
-            </button>
+            <label className="theme-switch">
+              <input
+                type="checkbox"
+                checked={darkMode}
+                onChange={onToggleDarkMode}
+              />
+              <span className="theme-switch-track">
+                <span className="theme-switch-thumb">
+                  <i className={darkMode ? "ti ti-moon" : "ti ti-sun"}></i>
+                </span>
+              </span>
+            </label>
             <button className="logout-button" onClick={onLogout}>
               Logout
             </button>
@@ -224,9 +233,15 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
           {renderContent()}
         </div>
 
-        {activeView !== "dashboard" && activeView !== "calendar" && (
-          <button className="fab" onClick={handleAddTask}>+</button>
-        )}
+        <button
+          className="fab"
+          onClick={() => {
+            setActiveView("all");
+            handleAddTask();
+          }}
+        >
+          <i className="ti ti-plus"></i>
+        </button>
 
         {showForm && (
           <TaskForm

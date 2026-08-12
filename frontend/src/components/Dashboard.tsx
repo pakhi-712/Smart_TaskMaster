@@ -1,34 +1,38 @@
 import { useState, useEffect } from "react";
-import type { DashboardStats } from "../types/task";
+import type { Task } from "../types/task";
+import { getAllTasks } from "../api/taskApi";
 import { getDailyBriefing } from "../api/aiApi";
-import { getActivityData } from "../api/taskApi";
 
-interface DashboardProps {
-  stats: DashboardStats | null;
-}
+const DAILY_LIMIT = 10;
 
-const DAILY_LIMIT = 5;
+function Dashboard() {
 
-function Dashboard({ stats }: DashboardProps) {
-
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [briefing, setBriefing] = useState<string>("");
   const [briefingLoading, setBriefingLoading] = useState(false);
   const [wasCached, setWasCached] = useState(false);
   const [usesLeft, setUsesLeft] = useState(DAILY_LIMIT);
-  const [activityData, setActivityData] = useState<Record<string, number>>({});
-
-  // Load activity data and daily usage count on mount
+  const [hasAutoRun, setHasAutoRun] = useState(false);
+  
   useEffect(() => {
-    loadActivity();
+    loadTasks();
     loadDailyUsage();
   }, []);
+  
+  // Auto-generate briefing on first load (only once per session)
+    useEffect(() => {
+      if (!hasAutoRun && tasks.length > 0) {
+        setHasAutoRun(true);
+        handleGetBriefing();
+      }
+    }, [tasks]);
 
-  async function loadActivity() {
+  async function loadTasks() {
     try {
-      const data = await getActivityData();
-      setActivityData(data);
+      const data = await getAllTasks();
+      setTasks(data);
     } catch (err) {
-      console.error("Failed to load activity:", err);
+      console.error("Failed to load tasks:", err);
     }
   }
 
@@ -40,7 +44,6 @@ function Dashboard({ stats }: DashboardProps) {
       if (parsed.date === today) {
         setUsesLeft(DAILY_LIMIT - parsed.count);
       } else {
-        // New day — reset
         localStorage.setItem("briefingUsage", JSON.stringify({ date: today, count: 0 }));
         setUsesLeft(DAILY_LIMIT);
       }
@@ -54,14 +57,10 @@ function Dashboard({ stats }: DashboardProps) {
     const stored = localStorage.getItem("briefingUsage");
     const today = new Date().toDateString();
     let count = 0;
-
     if (stored) {
       const parsed = JSON.parse(stored);
-      if (parsed.date === today) {
-        count = parsed.count;
-      }
+      if (parsed.date === today) count = parsed.count;
     }
-
     count++;
     localStorage.setItem("briefingUsage", JSON.stringify({ date: today, count }));
     setUsesLeft(DAILY_LIMIT - count);
@@ -69,11 +68,9 @@ function Dashboard({ stats }: DashboardProps) {
 
   async function handleGetBriefing() {
     if (usesLeft <= 0) return;
-
     setBriefingLoading(true);
     setBriefing("");
     setWasCached(false);
-
     try {
       const result = await getDailyBriefing();
       setBriefing(result.briefing);
@@ -86,75 +83,161 @@ function Dashboard({ stats }: DashboardProps) {
     }
   }
 
-  // ---- Heatmap logic ----
-  function buildHeatmapCells() {
-    const cells = [];
-    const today = new Date();
+  // ---- Categorize pending tasks into 3 buckets ----
 
-    // Build 364 days (52 weeks) going backwards from today
-    for (let i = 363; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split("T")[0]; // "2026-08-09"
-      const count = activityData[dateStr] || 0;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-      let level = "empty";
-      if (count === 1) level = "level-1";
-      else if (count === 2 || count === 3) level = "level-2";
-      else if (count >= 4) level = "level-3";
+  const pendingTasks = tasks.filter(t => t.status === "PENDING");
 
-      cells.push(
-        <div
-          key={dateStr}
-          className={`heatmap-cell ${level}`}
-          title={`${dateStr}: ${count} task${count !== 1 ? "s" : ""} completed`}
-        />
-      );
+  // Needs Attention: overdue OR due today
+  const needsAttention = pendingTasks.filter(t => {
+    if (!t.dueDate) return false;
+    const due = new Date(t.dueDate);
+    due.setHours(0, 0, 0, 0);
+    return due <= today;
+  });
+
+  // In Progress: has subtasks with at least one completed (partial progress)
+  // AND not already in needsAttention
+  const needsAttentionIds = new Set(needsAttention.map(t => t.id));
+  const inProgress = pendingTasks.filter(t => {
+    if (needsAttentionIds.has(t.id)) return false;
+    if (!t.subtasks || t.subtasks.length === 0) return false;
+    const completedCount = t.subtasks.filter(s => s.completed).length;
+    return completedCount > 0 && completedCount < t.subtasks.length;
+  });
+
+  // Upcoming: everything else pending
+  const inProgressIds = new Set(inProgress.map(t => t.id));
+  const upcoming = pendingTasks.filter(t =>
+    !needsAttentionIds.has(t.id) && !inProgressIds.has(t.id)
+  );
+
+  // ---- Progress calculation ----
+  function getProgress(task: Task): number {
+    if (!task.subtasks || task.subtasks.length === 0) return 0;
+    return Math.round((task.subtasks.filter(s => s.completed).length / task.subtasks.length) * 100);
+  }
+
+  function getTag(task: Task): string {
+    if (!task.dueDate) return "";
+    const due = new Date(task.dueDate);
+    due.setHours(0, 0, 0, 0);
+    if (due < today) return "Overdue";
+    if (due.getTime() === today.getTime()) return "Today";
+    return "";
+  }
+
+  function getPriorityColor(priority: string): string {
+    switch (priority) {
+      case "HIGH": return "var(--priority-high)";
+      case "MEDIUM": return "var(--priority-medium)";
+      case "LOW": return "var(--priority-low)";
+      default: return "var(--border)";
     }
-    return cells;
   }
 
-  if (!stats) {
-    return <div className="dashboard-loading">Loading dashboard...</div>;
+  function formatDate(dateString: string | null): string {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "short", day: "numeric",
+    });
   }
 
-  const statCards = [
-    { label: "Total Tasks", value: stats.total, color: "blue" },
-    { label: "Pending", value: stats.pending, color: "orange" },
-    { label: "Completed", value: stats.completed, color: "green" },
-    { label: "High Priority", value: stats.highPriority, color: "red" },
-    { label: "Overdue", value: stats.overdue, color: "purple" },
-  ];
+  // ---- Render a single task card in a column ----
+  function renderTaskCard(task: Task) {
+    const progress = getProgress(task);
+    const tag = getTag(task);
+    const hasChecklist = task.subtasks && task.subtasks.length > 0;
+
+    return (
+      <div
+        key={task.id}
+        className="dash-task-card"
+        style={{ borderLeftColor: getPriorityColor(task.priority) }}
+      >
+        <div className="dash-task-header">
+          <span className="dash-task-title">{task.title}</span>
+          {tag && (
+            <span className={`dash-task-tag ${tag.toLowerCase()}`}>
+              {tag}
+            </span>
+          )}
+        </div>
+
+        {task.dueDate && (
+          <span className="dash-task-due">Due {formatDate(task.dueDate)}</span>
+        )}
+
+        {hasChecklist && (
+          <div className="dash-progress-section">
+            <div className="dash-progress-bar">
+              <div
+                className="dash-progress-fill"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+            <span className="dash-progress-text">
+              {task.subtasks!.filter(s => s.completed).length}/{task.subtasks!.length} items
+            </span>
+          </div>
+        )}
+
+        {!hasChecklist && (
+          <span className="dash-progress-text">No checklist</span>
+        )}
+      </div>
+    );
+  }
+
+  // ---- Render a column ----
+  function renderColumn(
+    title: string,
+    icon: string,
+    colorClass: string,
+    taskList: Task[]
+  ) {
+    return (
+      <div className="dash-column">
+        <div className={`dash-column-header ${colorClass}`}>
+          <span>{icon} {title}</span>
+          <span className="dash-column-count">{taskList.length}</span>
+        </div>
+        <div className="dash-column-body">
+          {taskList.length === 0 ? (
+            <p className="dash-column-empty">Nothing here</p>
+          ) : (
+            taskList.map(task => renderTaskCard(task))
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="dashboard">
+    <div className="dashboard-v2">
 
-      {/* Stat Cards */}
-      <div className="stats-grid">
-        {statCards.map((card) => (
-          <div key={card.label} className={`stat-card stat-${card.color}`}>
-            <span className="stat-value">{card.value}</span>
-            <span className="stat-label">{card.label}</span>
-          </div>
-        ))}
+      {/* Three category columns */}
+      <div className="dash-columns">
+        {renderColumn("Needs Attention", "⚠", "col-danger", needsAttention)}
+        {renderColumn("In Progress", "◐", "col-warning", inProgress)}
+        {renderColumn("Upcoming", "◌", "col-info", upcoming)}
       </div>
 
-      {/* AI Daily Briefing */}
+      {/* Daily Briefing */}
       <div className="briefing-section">
         <div className="briefing-header">
           <h3>Daily Briefing</h3>
           <div className="briefing-controls">
-            <span
-              className="briefing-uses"
-              title={`${usesLeft} uses remaining today`}
-            >
+            <span className="briefing-uses" title={`${usesLeft} uses remaining today`}>
               {usesLeft}/{DAILY_LIMIT} left
             </span>
             <button
               className="briefing-button"
               onClick={handleGetBriefing}
               disabled={briefingLoading || usesLeft <= 0}
-              title={usesLeft <= 0 ? "Daily limit reached. Resets tomorrow." : ""}
             >
               {briefingLoading ? "Generating..." : usesLeft <= 0 ? "Limit Reached" : "Read My Day"}
             </button>
@@ -163,26 +246,10 @@ function Dashboard({ stats }: DashboardProps) {
 
         {briefing && (
           <div className="briefing-content">
-            {wasCached && <span className="cached-badge">⚡ Cached</span>}
+            {wasCached && <span className="cached-badge">Cached</span>}
             <p>{briefing}</p>
           </div>
         )}
-      </div>
-
-      {/* Activity Heatmap */}
-      <div className="heatmap-section">
-        <h3>Activity Streak</h3>
-        <div className="heatmap-grid">
-          {buildHeatmapCells()}
-        </div>
-        <div className="heatmap-legend">
-          <span>Less</span>
-          <div className="heatmap-cell empty"></div>
-          <div className="heatmap-cell level-1"></div>
-          <div className="heatmap-cell level-2"></div>
-          <div className="heatmap-cell level-3"></div>
-          <span>More</span>
-        </div>
       </div>
     </div>
   );
