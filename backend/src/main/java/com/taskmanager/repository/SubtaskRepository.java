@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface SubtaskRepository extends JpaRepository<Subtask, Long> {
 
-    // All subtasks belonging to a specific task
+    // List of subtasks
     List<Subtask> findByTaskIdOrderByIdAsc(Long taskId);
 
     // Count how many subtasks are not completed for a task

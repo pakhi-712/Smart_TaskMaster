@@ -28,8 +28,9 @@ public class AuthController {
         this.jwtUtil = jwtUtil;
     }
 
-    // POST /api/auth/register
+    // catches the specific registration HTTP call
     @PostMapping("/register")
+    // @RequestBody takes the raw JSON string Axios sent and maps it directly into our Java RegisterRequest DTO.
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
 
         if (!request.password().equals(request.confirmPassword())) {
@@ -50,7 +51,7 @@ public class AuthController {
             passwordEncoder.encode(request.securityAnswer().toLowerCase().trim())
         );
 
-        // storing new user data
+        // stores the new user into the database as SQL (Spring JPA), provides the ID to each entry (table)
         User saved = userRepository.save(user);
 
         String token = jwtUtil.generateToken(saved.getId(), saved.getEmail());

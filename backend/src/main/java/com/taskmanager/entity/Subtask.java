@@ -21,8 +21,6 @@ public class Subtask {
     @JoinColumn(name = "task_id", nullable = false)
     private Task task;
 
-    // ---- Constructors ----
-
     public Subtask() {}
 
     public Subtask(String text, Task task) {
@@ -31,15 +29,13 @@ public class Subtask {
         this.task = task;
     }
 
-    // ---- Getters ----
-
+    // getters
     public Long getId() { return id; }
     public String getText() { return text; }
     public boolean isCompleted() { return completed; }
     public Task getTask() { return task; }
 
-    // ---- Setters ----
-
+    // setters
     public void setText(String text) { this.text = text; }
     public void setCompleted(boolean completed) { this.completed = completed; }
     public void setTask(Task task) { this.task = task; }

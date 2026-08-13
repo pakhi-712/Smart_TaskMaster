@@ -88,20 +88,6 @@ public class TaskController {
         return ResponseEntity.noContent().build();
     }
 
-//    @GetMapping("/stats")
-//    public ResponseEntity<DashboardStats> getStats(
-//            @AuthenticationPrincipal UserPrincipal user) {
-//        return ResponseEntity.ok(taskService.getStats(user.getId()));
-//    }
-
-//    // GET /api/tasks/activity
-//    // Returns a map of date → completion count for the heatmap
-//    @GetMapping("/activity")
-//    public ResponseEntity<Map<String, Integer>> getActivity(
-//            @AuthenticationPrincipal UserPrincipal user) {
-//        return ResponseEntity.ok(taskService.getActivityData(user.getId()));
-//    }
-
     // functions for substacks within each task
     @PostMapping("/{id}/subtasks")
     public ResponseEntity<TaskDTO> addSubtask(
@@ -125,7 +111,6 @@ public class TaskController {
                 taskService.toggleSubtask(taskId, subtaskId, user.getId()));
     }
 
-    // DELETE /api/tasks/5/subtasks/3
     @DeleteMapping("/{taskId}/subtasks/{subtaskId}")
     public ResponseEntity<TaskDTO> deleteSubtask(
             @PathVariable Long taskId,

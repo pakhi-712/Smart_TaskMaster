@@ -79,13 +79,9 @@ public class AiService {
         }
         return TaskPriority.MEDIUM; // Default fallback
     }
-
-    // ================================================================
-    // FEATURE 2: Cached differential daily briefing
-    // ================================================================
     public Map<String, Object> generateDailyBriefing(Long userId) {
 
-        // Step 1: Load current pending tasks
+
         List<Task> pendingTasks = taskRepository
                 .findByUserIdAndStatusOrderByCreatedAtDesc(userId, TaskStatus.PENDING);
 
@@ -96,17 +92,13 @@ public class AiService {
             );
         }
 
-        // Step 2: Build current snapshot string for comparison
         String currentSnapshot = buildSnapshot(pendingTasks);
-
-        // Step 3: Check cache
         Optional<BriefingCache> cachedOpt = briefingCacheRepository.findByUserId(userId);
 
         if (cachedOpt.isPresent()) {
             BriefingCache cached = cachedOpt.get();
             String oldSnapshot = cached.getTaskSnapshot();
 
-            // If nothing changed — return cached briefing instantly
             if (currentSnapshot.equals(oldSnapshot)) {
                 return Map.of(
                     "briefing", cached.getBriefingText(),
@@ -114,7 +106,6 @@ public class AiService {
                 );
             }
 
-            // Something changed — build a diff and send a shorter prompt
             String diff = computeDiff(oldSnapshot, currentSnapshot, pendingTasks);
             String diffPrompt = "You are a productivity assistant. " +
                     "Here was the user's previous daily briefing:\n\n" +
@@ -131,7 +122,6 @@ public class AiService {
             return Map.of("briefing", briefing, "cached", false);
         }
 
-        // Step 4: No cache exists — full briefing (first time)
         String fullPrompt = buildFullBriefingPrompt(pendingTasks);
         String briefing = callAiApi(fullPrompt);
         updateCache(userId, briefing, currentSnapshot);
@@ -139,7 +129,6 @@ public class AiService {
         return Map.of("briefing", briefing, "cached", false);
     }
 
-    // ---- Helper: build task snapshot string for comparison ----
     private String buildSnapshot(List<Task> tasks) {
         return tasks.stream()
                 .map(t -> t.getId() + ":" + t.getTitle() + ":" + t.getStatus())
@@ -147,7 +136,6 @@ public class AiService {
                 .collect(Collectors.joining("|"));
     }
 
-    // ---- Helper: compute what changed between old and new snapshots ----
     private String computeDiff(String oldSnapshot, String newSnapshot, List<Task> currentTasks) {
         Set<String> oldIds = new HashSet<>();
         Map<String, String> oldTitles = new HashMap<>();
@@ -168,14 +156,12 @@ public class AiService {
 
         StringBuilder diff = new StringBuilder();
 
-        // Tasks that were in old snapshot but not in current pending = completed
         for (String oldId : oldIds) {
             if (!currentIds.contains(oldId)) {
                 diff.append("- COMPLETED: '").append(oldTitles.get(oldId)).append("'\n");
             }
         }
 
-        // Tasks in current but not in old = newly added
         for (Task task : currentTasks) {
             if (!oldIds.contains(task.getId().toString())) {
                 diff.append("- NEW: '").append(task.getTitle())
@@ -183,13 +169,11 @@ public class AiService {
             }
         }
 
-        // Count remaining
         diff.append("- REMAINING: ").append(currentTasks.size()).append(" pending tasks");
 
         return diff.toString();
     }
 
-    // ---- Helper: full briefing prompt (first time) ----
     private String buildFullBriefingPrompt(List<Task> tasks) {
         StringBuilder taskList = new StringBuilder();
         for (Task task : tasks) {
@@ -215,7 +199,6 @@ public class AiService {
                 "Keep the tone motivating but not over-the-top.";
     }
 
-    // ---- Helper: save/update the cache ----
     private void updateCache(Long userId, String briefing, String snapshot) {
         BriefingCache cache = briefingCacheRepository.findByUserId(userId)
                 .orElse(new BriefingCache(userId, briefing, snapshot));
@@ -225,10 +208,8 @@ public class AiService {
         briefingCacheRepository.save(cache);
     }
 
-    // ---- Gemini API call ----
     private String callAiApi(String prompt) {
         try {
-            // DeepSeek uses OpenAI-compatible format
             Map<String, Object> requestBody = Map.of(
                 "model", "llama-3.3-70b-versatile",
                 "messages", List.of(
@@ -246,8 +227,6 @@ public class AiService {
                     .bodyToMono(Map.class)
                     .block();
 
-            // DeepSeek response format:
-            // { "choices": [{ "message": { "content": "response text" } }] }
             if (response != null && response.containsKey("choices")) {
                 List<Map> choices = (List<Map>) response.get("choices");
                 if (!choices.isEmpty()) {

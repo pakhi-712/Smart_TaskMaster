@@ -38,13 +38,11 @@ public class Task {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // One task can have many subtasks (checklist items)
     // CascadeType.ALL means: when you delete a task, delete its subtasks too
     // orphanRemoval means: if a subtask is removed from this list, delete it from DB
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     private java.util.List<Subtask> subtasks = new java.util.ArrayList<>();
 
-    // ---- Constructors ----
 
     public Task() {}
 
@@ -59,7 +57,6 @@ public class Task {
         this.user = user;
     }
 
-    // ---- Getters ----
 
     public Long getId() { return id; }
     public String getTitle() { return title; }
@@ -73,8 +70,6 @@ public class Task {
     public User getUser() { return user; }
     public java.util.List<Subtask> getSubtasks() { return subtasks; }
 
-    // ---- Setters ----
-    // No setter for id (auto-generated), createdAt/updatedAt (lifecycle hooks handle them)
 
     public void setTitle(String title) { this.title = title; }
     public void setDescription(String description) { this.description = description; }
@@ -84,7 +79,6 @@ public class Task {
     public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
     public void setUser(User user) { this.user = user; }
 
-    // ---- Lifecycle hooks ----
 
     @PrePersist
     protected void onCreate() {

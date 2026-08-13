@@ -28,15 +28,13 @@ public class User {
 
     private LocalDateTime createdAt;
 
-    // ---- Constructors ----
 
     // Empty constructor — JPA requires this.
     // When JPA loads a row from the database, it first creates an empty User object
     // using this constructor, then fills in the fields one by one using setters.
     public User() {}
 
-    // Full constructor — used when YOU create a User in your code.
-    // We skip 'id' (database generates it) and 'createdAt' (@PrePersist handles it).
+    // Full constructor — used when we create a User in our code
     public User(String email, String password, String name, String securityQuestion, String securityAnswer) {
         this.email = email;
         this.password = password;
@@ -44,11 +42,7 @@ public class User {
         this.securityAnswer=securityAnswer;
         this.securityQuestion=securityQuestion;}
 
-    // ---- Getters ----
-    // These let other classes READ the fields.
-    // Fields are private (nobody can do user.email directly),
-    // but getters provide controlled access (user.getEmail()).
-
+    //for providing data visibility to other classes
     public Long getId() { return id; }
     public String getEmail() { return email; }
     public String getPassword() { return password; }
@@ -57,10 +51,6 @@ public class User {
     public String getSecurityQuestion() {return securityQuestion; }
     public String getSecurityAnswer() {return securityAnswer; }
 
-    // ---- Setters ----
-    // These let other classes CHANGE the fields.
-    // No setter for 'id' — once the database assigns it, it should never change.
-    // No setter for 'createdAt' — @PrePersist handles it automatically.
 
     public void setEmail(String email) { this.email = email; }
     public void setPassword(String password) { this.password = password; }
@@ -68,7 +58,6 @@ public class User {
     public void setSecurityQuestion() { this.securityQuestion=securityQuestion; }
     public void setSecurityAnswer() { this.securityAnswer = securityAnswer; }
     
-    // ---- Lifecycle hook ----
 
     @PrePersist
     protected void onCreate() {

@@ -21,8 +21,6 @@ public class UserPrincipal implements UserDetails {
         this.name = name;
     }
 
-    // Factory method: converts your User entity into a UserPrincipal.
-    // Called by JwtAuthFilter after loading the user from the database.
     public static UserPrincipal fromUser(User user) {
         return new UserPrincipal(
             user.getId(),
@@ -32,14 +30,10 @@ public class UserPrincipal implements UserDetails {
         );
     }
 
-    // ---- Your custom getters ----
 
     public Long getId() { return id; }
     public String getName() { return name; }
 
-    // ---- UserDetails interface methods ----
-    // Spring Security calls these internally to check authentication.
-    // We must implement all of them because UserDetails is an interface.
 
     @Override
     public String getUsername() { return email; }
