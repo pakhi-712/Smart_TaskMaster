@@ -1,9 +1,8 @@
-import type { DashboardStats } from "../types/task";
+import type {  } from "../types/task";
 
 interface SidebarProps {
   activeView: string;
   onChangeView: (view: any) => void;
-  stats: DashboardStats | null;
   isOpen: boolean;
   onToggle: () => void;
 }

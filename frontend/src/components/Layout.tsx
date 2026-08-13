@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { Task, DashboardStats } from "../types/task";
+import type { Task } from "../types/task";
 import { getAllTasks, toggleTaskStatus, deleteTask } from "../api/taskApi";
 import Sidebar from "./Sidebar";
 import Dashboard from "./Dashboard";
@@ -22,7 +22,6 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
   const [activeView, setActiveView] = useState<ActiveView>("dashboard");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [allTasks, setAllTasks] = useState<Task[]>([]); // unfiltered, for calendar
-  const [stats, setStats] = useState<DashboardStats | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -183,7 +182,6 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
       <Sidebar
         activeView={activeView}
         onChangeView={setActiveView}
-        stats={stats}
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
       />
