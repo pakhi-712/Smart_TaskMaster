@@ -75,7 +75,8 @@ function Dashboard() {
       const result = await getDailyBriefing();
       setBriefing(result.briefing);
       setWasCached(result.cached);
-      incrementUsage();
+      if(!result.cached)
+		incrementUsage();
     } catch (err) {
       setBriefing("Could not generate briefing. Please try again.");
     } finally {
@@ -83,7 +84,6 @@ function Dashboard() {
     }
   }
 
-  // ---- Categorize pending tasks into 3 buckets ----
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -229,7 +229,7 @@ function Dashboard() {
       {/* Daily Briefing */}
       <div className="briefing-section">
         <div className="briefing-header">
-          <h3>Daily Briefing</h3>
+          <h2>So, how we doin'?</h2>
           <div className="briefing-controls">
             <span className="briefing-uses" title={`${usesLeft} uses remaining today`}>
               {usesLeft}/{DAILY_LIMIT} left

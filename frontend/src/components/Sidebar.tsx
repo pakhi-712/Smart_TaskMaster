@@ -29,6 +29,8 @@ function Sidebar({ activeView, onChangeView, stats, isOpen, onToggle }: SidebarP
       <div className="sidebar-header">
         <h1 className="app-title">TaskMaster</h1>
         <button className="sidebar-close" onClick={onToggle}>✕</button>
+		<button className="sidebar-open" onClick={onToggle}>✕</button>
+
       </div>
 
       <nav className="sidebar-nav">

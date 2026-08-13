@@ -105,7 +105,10 @@ function TaskForm({ task, onSuccess, onCancel }: TaskFormProps) {
 
         <div className="form-row">
           <div className="form-group">
-            <label>Priority</label>
+            <label>Priority		  
+			{isEditing && (
+		        <span className="priority-hint"> — select "Auto" to let AI re-evaluate</span>
+		      )}</label>
             <select value={priority} onChange={(e) => setPriority(e.target.value)}>
 			  <option value="">Auto</option>
               <option value="LOW">Low</option>

@@ -330,7 +330,7 @@ input, select, textarea, button {
   font-size: 1.4rem;
   cursor: pointer;
   color: var(--text-primary);
-  display: none;
+  display: block;
 }
 
 .page-title {
@@ -595,7 +595,6 @@ input, select, textarea, button {
 }
 
 
-/* (heatmap colors removed) */
 
 /* ---- Briefing controls ---- */
 .briefing-controls {
