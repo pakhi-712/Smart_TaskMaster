@@ -47,20 +47,23 @@ public class TaskService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        TaskPriority priority = request.priority() != null 
+                ? request.priority() 
+                : generatePriority(null, request.priority(), request);
         // Auto-assign priority if user didn't pick one
-        TaskPriority priority = request.priority();
-        if (priority == null) {
-            try {
-                priority = aiService.suggestPriority(
-                    request.title(),
-                    request.description(),
-                    request.category(),
-                    request.dueDate()
-                );
-            } catch (Exception e) {
-                priority = TaskPriority.MEDIUM; // Fallback if AI fails
-            }
-        }
+//        TaskPriority priority = generatePriority(null,request.priority,request);
+//        if (priority == null) {
+//            try {
+//                priority = aiService.suggestPriority(
+//                    request.title(),
+//                    request.description(),
+//                    request.category(),
+//                    request.dueDate()
+//                );
+//            } catch (Exception e) {
+//                priority = TaskPriority.MEDIUM; // Fallback if AI fails
+//            }
+//        }
 
         Task task = new Task(
             request.title(),
@@ -86,17 +89,50 @@ public class TaskService {
         // Reload to include subtasks in the response
         return toDTO(taskRepository.findById(saved.getId()).orElse(saved));
     }
+    public TaskPriority generatePriority(TaskPriority old_p, TaskPriority new_p, TaskRequest request)
+    {
+    	if(new_p!=null)
+    		return new_p;
+    	try {
+            return aiService.suggestPriority(
+                request.title(),
+                request.description(),
+                request.category(),
+                request.dueDate()
+            );
+        } catch (Exception e) {
+            // Fallback logic if AI fails
+            if (old_p == null) {
+                return TaskPriority.MEDIUM;
+            } else {
+            	System.out.println("fallback to original");
+                return old_p;
+            }
+        }
+    }
 
     public TaskDTO updateTask(Long taskId, TaskRequest request, Long userId) {
         Task task = findTaskOwnedByUser(taskId, userId);
+        TaskPriority old_p=task.getPriority();
 
         task.setTitle(request.title());
         task.setDescription(request.description());
-        task.setPriority(request.priority() != null ? request.priority() : task.getPriority());
+        task.setPriority(generatePriority(old_p,request.priority(),request));
         task.setCategory(request.category());
         task.setDueDate(request.dueDate());
 
         Task saved = taskRepository.save(task);
+        // update priority order accordingly, else stays the sames
+//        try {
+//            priority = aiService.suggestPriority(
+//                request.title(),
+//                request.description(),
+//                request.category(),
+//                request.dueDate()
+//            );
+//        } catch (Exception e) {
+//            priority = old_p; 
+//        }
         return toDTO(saved);
     }
 
@@ -191,34 +227,34 @@ public class TaskService {
                 .stream().map(this::toDTO).toList();
     }
 
-    // ---- Dashboard ----
-
-    public DashboardStats getStats(Long userId) {
-        long total = taskRepository.findByUserIdOrderByCreatedAtDesc(userId).size();
-        long pending = taskRepository.countByUserIdAndStatus(userId, TaskStatus.PENDING);
-        long completed = taskRepository.countByUserIdAndStatus(userId, TaskStatus.COMPLETED);
-        long highPriority = taskRepository.countByUserIdAndPriority(userId, TaskPriority.HIGH);
-        long overdue = taskRepository.countOverdue(userId, LocalDate.now());
-
-        return new DashboardStats(total, pending, completed, highPriority, overdue);
-    }
+//    // ---- Dashboard ----
+//
+//    public DashboardStats getStats(Long userId) {
+//        long total = taskRepository.findByUserIdOrderByCreatedAtDesc(userId).size();
+//        long pending = taskRepository.countByUserIdAndStatus(userId, TaskStatus.PENDING);
+//        long completed = taskRepository.countByUserIdAndStatus(userId, TaskStatus.COMPLETED);
+//        long highPriority = taskRepository.countByUserIdAndPriority(userId, TaskPriority.HIGH);
+//        long overdue = taskRepository.countOverdue(userId, LocalDate.now());
+//
+//        return new DashboardStats(total, pending, completed, highPriority, overdue);
+//    }
 
     // ---- Activity Heatmap ----
 
-    public Map<String, Integer> getActivityData(Long userId) {
-        java.time.LocalDateTime since = java.time.LocalDateTime.now().minusDays(365);
-        List<Task> completed = taskRepository.findCompletedSince(userId, since);
-
-        // Group by date, count per day
-        Map<String, Integer> activity = new java.util.HashMap<>();
-        for (Task task : completed) {
-            if (task.getUpdatedAt() != null) {
-                String date = task.getUpdatedAt().toLocalDate().toString(); // "2026-08-09"
-                activity.put(date, activity.getOrDefault(date, 0) + 1);
-            }
-        }
-        return activity;
-    }
+//    public Map<String, Integer> getActivityData(Long userId) {
+//        java.time.LocalDateTime since = java.time.LocalDateTime.now().minusDays(365);
+//        List<Task> completed = taskRepository.findCompletedSince(userId, since);
+//
+//        // Group by date, count per day
+//        Map<String, Integer> activity = new java.util.HashMap<>();
+//        for (Task task : completed) {
+//            if (task.getUpdatedAt() != null) {
+//                String date = task.getUpdatedAt().toLocalDate().toString(); // "2026-08-09"
+//                activity.put(date, activity.getOrDefault(date, 0) + 1);
+//            }
+//        }
+//        return activity;
+//    }
 
     // ---- Helpers ----
 
