@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Task, TaskCreateRequest, DashboardStats } from "../types/task";
+import type { Task, TaskCreateRequest } from "../types/task";
 import { getToken } from "./authApi";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";

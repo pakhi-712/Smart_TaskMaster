@@ -25,14 +25,14 @@ export interface TaskCreateRequest {
   dueDate?: string;
   subtasks?: string[];
 }
-
+/*
 export interface DashboardStats {
   total: number;
   pending: number;
   completed: number;
   highPriority: number;
   overdue: number;
-}
+} */
 
 export interface RegisterRequest {
   name: string;
