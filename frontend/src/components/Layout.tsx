@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import type { Task, DashboardStats } from "../types/task";
-import { getAllTasks, getStats, toggleTaskStatus, deleteTask } from "../api/taskApi";
+import { getAllTasks, toggleTaskStatus, deleteTask } from "../api/taskApi";
 import Sidebar from "./Sidebar";
 import Dashboard from "./Dashboard";
 import TaskList from "./TaskList";
 import TaskForm from "./TaskForm";
 import FilterBar from "./FilterBar";
-import Calendar from "./Calendar";
 
 interface LayoutProps {
   userName: string;
@@ -33,7 +32,6 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
 
   useEffect(() => {
     loadTasks();
-    loadStats();
     loadAllTasks();
   }, [activeView, searchKeyword]);
 
@@ -66,15 +64,6 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
       console.error("Failed to load tasks:", err);
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function loadStats() {
-    try {
-      const data = await getStats();
-      setStats(data);
-    } catch (err) {
-      console.error("Failed to load stats:", err);
     }
   }
 
@@ -152,7 +141,6 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
   function getPageTitle(): string {
     switch (activeView) {
       case "dashboard": return "Dashboard";
-      case "calendar": return "Calendar";
       case "all": return "All Tasks";
       case "pending": return "Pending Tasks";
       case "completed": return "Completed Tasks";
@@ -168,9 +156,6 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
       return <Dashboard />;
     }
 
-    if (activeView === "calendar") {
-      return <Calendar tasks={allTasks} />;
-    }
 
     // Task list views
     return (

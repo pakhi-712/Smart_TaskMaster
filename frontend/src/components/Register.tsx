@@ -1,3 +1,4 @@
+//function imports
 import { useState } from "react";
 import { register, saveToken, saveUser } from "../api/authApi";
 
@@ -14,7 +15,7 @@ const SECURITY_QUESTIONS = [
   "What was the name of your first school?",
   "What is your favorite movie?",
 ];
-
+// defining the segments of the registration page, and their subsequent error handling
 function Register({ onSuccess, onSwitchToLogin }: RegisterProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

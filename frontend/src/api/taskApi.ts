@@ -55,22 +55,6 @@ export async function deleteTask(id: number): Promise<void> {
   await authAxios().delete(`/api/tasks/${id}`);
 }
 
-// ---- Dashboard ----
-
-export async function getStats(): Promise<DashboardStats> {
-  const response = await authAxios().get<DashboardStats>("/api/tasks/stats");
-  return response.data;
-}
-
-// ---- Activity Heatmap ----
-
-export async function getActivityData(): Promise<Record<string, number>> {
-  const response = await authAxios().get<Record<string, number>>("/api/tasks/activity");
-  return response.data;
-}
-
-// ---- Subtasks ----
-
 export async function addSubtask(taskId: number, text: string): Promise<Task> {
   const response = await authAxios().post<Task>(
     `/api/tasks/${taskId}/subtasks`,

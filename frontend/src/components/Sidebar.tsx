@@ -12,7 +12,7 @@ function Sidebar({ activeView, onChangeView, stats, isOpen, onToggle }: SidebarP
 
   const mainNavItems = [
     { label: "Dashboard", value: "dashboard", count: null },
-    { label: "Calendar", value: "calendar", count: null },
+    /*{ label: "Calendar", value: "calendar", count: null },*/
     { label: "All Tasks", value: "all", count: stats?.total ?? null },
     { label: "Pending", value: "pending", count: stats?.pending ?? null },
     { label: "Completed", value: "completed", count: stats?.completed ?? null },

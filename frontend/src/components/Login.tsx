@@ -169,8 +169,8 @@ function Login({ onSuccess, onSwitchToRegister }: LoginProps) {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h1>Welcome Back</h1>
-        <p className="auth-subtitle">Log in to manage your tasks</p>
+        <h1>Welcome Back!</h1>
+        <p className="auth-subtitle">Log In</p>
 
         {error && <div className="auth-error">{error}</div>}
 

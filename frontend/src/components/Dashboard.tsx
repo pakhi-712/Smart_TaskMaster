@@ -36,6 +36,7 @@ function Dashboard() {
     }
   }
 
+  // loads the usage limit for the AI based summary tool, set to 10 as of now
   function loadDailyUsage() {
     const stored = localStorage.getItem("briefingUsage");
     if (stored) {
@@ -53,7 +54,7 @@ function Dashboard() {
     }
   }
 
-  function incrementUsage() {
+  function decrementUsage() {
     const stored = localStorage.getItem("briefingUsage");
     const today = new Date().toDateString();
     let count = 0;
@@ -76,9 +77,9 @@ function Dashboard() {
       setBriefing(result.briefing);
       setWasCached(result.cached);
       if(!result.cached)
-		incrementUsage();
+		decrementUsage();
     } catch (err) {
-      setBriefing("Could not generate briefing. Please try again.");
+      setBriefing("Couldn't complete task. Please try again.");
     } finally {
       setBriefingLoading(false);
     }
@@ -98,8 +99,7 @@ function Dashboard() {
     return due <= today;
   });
 
-  // In Progress: has subtasks with at least one completed (partial progress)
-  // AND not already in needsAttention
+  // In Progress: has atleast one checklist item fulfilled
   const needsAttentionIds = new Set(needsAttention.map(t => t.id));
   const inProgress = pendingTasks.filter(t => {
     if (needsAttentionIds.has(t.id)) return false;
@@ -146,7 +146,6 @@ function Dashboard() {
     });
   }
 
-  // ---- Render a single task card in a column ----
   function renderTaskCard(task: Task) {
     const progress = getProgress(task);
     const tag = getTag(task);
@@ -192,7 +191,6 @@ function Dashboard() {
     );
   }
 
-  // ---- Render a column ----
   function renderColumn(
     title: string,
     icon: string,
@@ -207,7 +205,7 @@ function Dashboard() {
         </div>
         <div className="dash-column-body">
           {taskList.length === 0 ? (
-            <p className="dash-column-empty">Nothing here</p>
+            <p className="dash-column-empty">Good to go!</p>
           ) : (
             taskList.map(task => renderTaskCard(task))
           )}
@@ -221,9 +219,9 @@ function Dashboard() {
 
       {/* Three category columns */}
       <div className="dash-columns">
-        {renderColumn("Needs Attention", "⚠", "col-danger", needsAttention)}
-        {renderColumn("In Progress", "◐", "col-warning", inProgress)}
-        {renderColumn("Upcoming", "◌", "col-info", upcoming)}
+        {renderColumn("Needs Attention", "*", "col-danger", needsAttention)}
+        {renderColumn("In Progress", "*", "col-warning", inProgress)}
+        {renderColumn("Upcoming", "*", "col-info", upcoming)}
       </div>
 
       {/* Daily Briefing */}
