@@ -9,14 +9,17 @@ interface LoginProps {
 function Login({ onSuccess, onSwitchToRegister }: LoginProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Forgot password state
   const [forgotMode, setForgotMode] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [securityQuestion, setSecurityQuestion] = useState("");
   const [securityAnswer, setSecurityAnswer] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [forgotStep, setForgotStep] = useState<1 | 2>(1);
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -43,6 +46,7 @@ function Login({ onSuccess, onSwitchToRegister }: LoginProps) {
     }
   }
 
+  // Step 1: Submit email to get security question
   async function handleForgotSubmitEmail() {
     setError("");
     if (!forgotEmail) {
@@ -61,6 +65,7 @@ function Login({ onSuccess, onSwitchToRegister }: LoginProps) {
     }
   }
 
+  // Step 2: Answer security question + set new password
   async function handleResetPassword() {
     setError("");
     if (!securityAnswer || !newPassword) {
@@ -75,6 +80,7 @@ function Login({ onSuccess, onSwitchToRegister }: LoginProps) {
     try {
       const msg = await resetPassword(forgotEmail, securityAnswer, newPassword);
       setSuccessMessage(msg);
+      // Reset everything after 3 seconds
       setTimeout(() => {
         setForgotMode(false);
         setForgotStep(1);
@@ -95,6 +101,7 @@ function Login({ onSuccess, onSwitchToRegister }: LoginProps) {
     }
   }
 
+  // ---- Forgot password UI ----
   if (forgotMode) {
     return (
       <div className="auth-container">
@@ -131,12 +138,16 @@ function Login({ onSuccess, onSwitchToRegister }: LoginProps) {
                   onChange={(e) => setSecurityAnswer(e.target.value)}
                 />
                 <label>New Password</label>
-                <input
-                  type="password"
-                  placeholder="At least 6 characters"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                />
+                <div className="password-field">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    placeholder="At least 6 characters"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
+                  
+				   
+                </div>
                 <button className="auth-button" onClick={handleResetPassword} disabled={loading}>
                   {loading ? "Resetting..." : "Reset Password"}
                 </button>
@@ -154,6 +165,7 @@ function Login({ onSuccess, onSwitchToRegister }: LoginProps) {
     );
   }
 
+  // ---- Normal login UI ----
   return (
     <div className="auth-container">
       <div className="auth-card">
@@ -172,12 +184,15 @@ function Login({ onSuccess, onSwitchToRegister }: LoginProps) {
           />
 
           <label>Password</label>
-          <input
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div className="password-field">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
+          </div>
 
           <p className="forgot-link" onClick={() => { setForgotMode(true); setError(""); }}>
             Forgot password?
