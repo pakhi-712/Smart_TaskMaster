@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { Task } from "../types/task";
-import { getAllTasks, toggleTaskStatus, deleteTask } from "../api/taskApi";
+import { getAllTasks, toggleTaskStatus, getStats, deleteTask } from "../api/taskApi";
 import Sidebar from "./Sidebar";
 import Dashboard from "./Dashboard";
 import TaskList from "./TaskList";
@@ -23,6 +23,7 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
   const [tasks, setTasks] = useState<Task[]>([]);
   const [allTasks, setAllTasks] = useState<Task[]>([]); // unfiltered, for calendar
   const [showForm, setShowForm] = useState(false);
+  const [stats, setStats] = useState<any>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [sortOption, setSortOption] = useState("newest");
@@ -32,6 +33,7 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
   useEffect(() => {
     loadTasks();
     loadAllTasks();
+	loadStats();
   }, [activeView, searchKeyword]);
 
   async function loadAllTasks() {
@@ -43,6 +45,14 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
     }
   }
 
+  async function loadStats() {
+      try {
+        const data = await getStats();
+        setStats(data);
+      } catch (err) {
+        console.error("Failed to load stats:", err);
+      }
+  }
   async function loadTasks() {
     setLoading(true);
     try {
@@ -182,6 +192,7 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
       <Sidebar
         activeView={activeView}
         onChangeView={setActiveView}
+		stats={stats}
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
       />
