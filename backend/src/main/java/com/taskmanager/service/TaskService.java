@@ -2,6 +2,7 @@ package com.taskmanager.service;
 
 import com.taskmanager.dto.TaskDTO;
 import com.taskmanager.dto.TaskDTO.SubtaskDTO;
+import com.taskmanager.dto.DashboardStats;
 import com.taskmanager.dto.TaskRequest;
 import com.taskmanager.entity.*;
 import com.taskmanager.repository.SubtaskRepository;
@@ -28,6 +29,15 @@ public class TaskService {
         this.userRepository = userRepository;
         this.subtaskRepository = subtaskRepository;
         this.aiService = aiService;
+    }
+    
+    public DashboardStats getStats(Long userId) {
+        long total = taskRepository.findByUserIdOrderByCreatedAtDesc(userId).size();
+        long pending = taskRepository.countByUserIdAndStatus(userId, TaskStatus.PENDING);
+        long completed = taskRepository.countByUserIdAndStatus(userId, TaskStatus.COMPLETED);
+        long highPriority = taskRepository.countByUserIdAndPriority(userId, TaskPriority.HIGH);
+        long overdue = taskRepository.countOverdue(userId, LocalDate.now());
+        return new DashboardStats(total, pending, completed, highPriority, overdue);
     }
 
     // ---- CRUD Operations ----
