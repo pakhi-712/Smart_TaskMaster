@@ -9,7 +9,7 @@ interface LoginProps {
 function Login({ onSuccess, onSwitchToRegister }: LoginProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  // const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -19,7 +19,7 @@ function Login({ onSuccess, onSwitchToRegister }: LoginProps) {
   const [securityQuestion, setSecurityQuestion] = useState("");
   const [securityAnswer, setSecurityAnswer] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [showNewPassword, setShowNewPassword] = useState(false);
+  // const [showNewPassword, setShowNewPassword] = useState(false);
   const [forgotStep, setForgotStep] = useState<1 | 2>(1);
   const [successMessage, setSuccessMessage] = useState("");
 
