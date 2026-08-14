@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { Task } from "../types/task";
-import { getAllTasks, toggleTaskStatus, deleteTask } from "../api/taskApi";
+import { getAllTasks, toggleTaskStatus, getStats, deleteTask } from "../api/taskApi";
 import Sidebar from "./Sidebar";
 import Dashboard from "./Dashboard";
 import TaskList from "./TaskList";
@@ -21,8 +21,9 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
 
   const [activeView, setActiveView] = useState<ActiveView>("dashboard");
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [allTasks, setAllTasks] = useState<Task[]>([]);
+  const [allTasks, setAllTasks] = useState<Task[]>([]); // unfiltered, for calendar
   const [showForm, setShowForm] = useState(false);
+  const [stats, setStats] = useState<any>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [sortOption, setSortOption] = useState("newest");
@@ -32,6 +33,7 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
   useEffect(() => {
     loadTasks();
     loadAllTasks();
+	loadStats();
   }, [activeView, searchKeyword]);
 
   async function loadAllTasks() {
@@ -43,6 +45,15 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
     }
   }
 
+  async function loadStats() {
+      try {
+          const data = await getStats();
+          setStats(data);
+      } catch (err) {
+          console.error("Failed to load stats:", err);
+      }
+  }
+  
   async function loadTasks() {
     setLoading(true);
     try {
@@ -95,6 +106,7 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
     try {
       await toggleTaskStatus(taskId);
       loadTasks();
+      loadStats();
       loadAllTasks();
     } catch (err) {
       console.error("Failed to toggle task:", err);
@@ -105,6 +117,7 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
     try {
       await deleteTask(taskId);
       loadTasks();
+      loadStats();
       loadAllTasks();
     } catch (err) {
       console.error("Failed to delete task:", err);
@@ -114,6 +127,7 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
   function handleTaskUpdated(updatedTask: Task) {
     setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
     setAllTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
+    loadStats();
   }
 
   function handleEditTask(task: Task) {
@@ -130,13 +144,13 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
     setShowForm(false);
     setEditingTask(null);
     loadTasks();
+    loadStats();
     loadAllTasks();
   }
 
   function getPageTitle(): string {
     switch (activeView) {
       case "dashboard": return "Dashboard";
-      case "calendar": return "Calendar";
       case "all": return "All Tasks";
       case "pending": return "Pending Tasks";
       case "completed": return "Completed Tasks";
@@ -152,10 +166,8 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
       return <Dashboard />;
     }
 
-    if (activeView === "calendar") {
-      return <Calendar tasks={allTasks} />;
-    }
 
+    // Task list views
     return (
       <>
         <FilterBar
@@ -181,6 +193,7 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
       <Sidebar
         activeView={activeView}
         onChangeView={setActiveView}
+		stats={stats}
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
       />
@@ -201,23 +214,7 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
               />
               <span className="theme-switch-track">
                 <span className="theme-switch-thumb">
-                  {darkMode ? (
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                    </svg>
-                  ) : (
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="5"></circle>
-                      <line x1="12" y1="1" x2="12" y2="3"></line>
-                      <line x1="12" y1="21" x2="12" y2="23"></line>
-                      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                      <line x1="1" y1="12" x2="3" y2="12"></line>
-                      <line x1="21" y1="12" x2="23" y2="12"></line>
-                      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                    </svg>
-                  )}
+                  <i className={darkMode ? "ti ti-moon" : "ti ti-sun"}></i>
                 </span>
               </span>
             </label>
@@ -234,13 +231,11 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
         <button
           className="fab"
           onClick={() => {
-            if (activeView === "dashboard" || activeView === "calendar") {
-              setActiveView("all");
-            }
+            setActiveView("all");
             handleAddTask();
           }}
         >
-          +
+          <i className="ti ti-plus"></i>
         </button>
 
         {showForm && (
@@ -257,4 +252,5 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
     </div>
   );
 }
+
 export default Layout;
