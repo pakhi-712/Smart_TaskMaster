@@ -6,7 +6,6 @@ import Dashboard from "./Dashboard";
 import TaskList from "./TaskList";
 import TaskForm from "./TaskForm";
 import FilterBar from "./FilterBar";
-import Calendar from "./Calendar";
 
 interface LayoutProps {
   userName: string;
