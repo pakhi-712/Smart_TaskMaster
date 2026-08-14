@@ -15,6 +15,17 @@ function authAxios() {
   });
 }
 
+export async function getStats(): Promise<{
+  total: number;
+  pending: number;
+  completed: number;
+  highPriority: number;
+  overdue: number;
+}> {
+  const response = await authAxios().get("/api/tasks/stats");
+  return response.data;
+}
+
 // ---- Task CRUD ----
 
 export async function getAllTasks(
