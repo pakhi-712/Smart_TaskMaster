@@ -36,6 +36,10 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
 	loadStats();
   }, [activeView, searchKeyword]);
 
+	  useEffect(() => {
+    console.log("All tasks:", allTasks);
+  }, [allTasks]);
+
   async function loadAllTasks() {
     try {
       const data = await getAllTasks();

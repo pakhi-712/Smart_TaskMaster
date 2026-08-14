@@ -1149,10 +1149,6 @@ input, select, textarea, button {
   font-size: 1.5rem;
 }
 
-.toggle-password i {
-  font-size: 1.1rem;
-  color: var(--text-secondary);
-}
 .password-field {
   position: relative;
   display: flex;
@@ -1480,5 +1476,9 @@ input, select, textarea, button {
 
   .calendar-task-pill {
     font-size: 0.6rem;
+  }
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear {
+    display: none;
   }
 }

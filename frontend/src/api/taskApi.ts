@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Task, TaskCreateRequest } from "../types/task";
+import type { Task, TaskCreateRequest, DashboardStats } from "../types/task";
 import { getToken } from "./authApi";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
@@ -54,6 +54,16 @@ export async function toggleTaskStatus(id: number): Promise<Task> {
 export async function deleteTask(id: number): Promise<void> {
   await authAxios().delete(`/api/tasks/${id}`);
 }
+
+// ---- Dashboard ----
+
+export async function getStats(): Promise<DashboardStats> {
+  const response = await authAxios().get<DashboardStats>("/api/tasks/stats");
+  return response.data;
+}
+
+
+// ---- Subtasks ----
 
 export async function addSubtask(taskId: number, text: string): Promise<Task> {
   const response = await authAxios().post<Task>(

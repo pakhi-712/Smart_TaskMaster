@@ -2,6 +2,7 @@ package com.taskmanager.controller;
 
 import com.taskmanager.dto.TaskDTO;
 import com.taskmanager.dto.TaskRequest;
+import com.taskmanager.dto.DashboardStats;
 import com.taskmanager.entity.TaskPriority;
 import com.taskmanager.entity.TaskStatus;
 import com.taskmanager.security.UserPrincipal;
@@ -48,6 +49,12 @@ public class TaskController {
         return ResponseEntity.ok(tasks);
     }
 
+    @GetMapping("/stats")
+    public ResponseEntity<DashboardStats> getStats(
+            @AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(taskService.getStats(user.getId()));
+    }
+    
     // gets the "id" numbered task for the specific user
     @GetMapping("/{id}")
     public ResponseEntity<TaskDTO> getTaskById(
