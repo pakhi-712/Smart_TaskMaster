@@ -106,7 +106,6 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
     try {
       await deleteTask(taskId);
       loadTasks();
-      loadStats();
       loadAllTasks();
     } catch (err) {
       console.error("Failed to delete task:", err);
@@ -116,7 +115,6 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
   function handleTaskUpdated(updatedTask: Task) {
     setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
     setAllTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
-    loadStats();
   }
 
   function handleEditTask(task: Task) {
