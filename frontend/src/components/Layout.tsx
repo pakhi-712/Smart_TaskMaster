@@ -47,13 +47,12 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
 
   async function loadStats() {
       try {
-          const data = await getStats();
-          setStats(data);
+        const data = await getStats();
+        setStats(data);
       } catch (err) {
-          console.error("Failed to load stats:", err);
+        console.error("Failed to load stats:", err);
       }
   }
-  
   async function loadTasks() {
     setLoading(true);
     try {
