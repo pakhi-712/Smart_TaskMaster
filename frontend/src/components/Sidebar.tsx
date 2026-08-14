@@ -3,6 +3,7 @@ import type {  } from "../types/task";
 interface SidebarProps {
   activeView: string;
   onChangeView: (view: any) => void;
+  stats: any;
   isOpen: boolean;
   onToggle: () => void;
 }
