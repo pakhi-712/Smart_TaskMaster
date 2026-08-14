@@ -131,7 +131,6 @@ function Layout({ userName, darkMode, onToggleDarkMode, onLogout }: LayoutProps)
     setShowForm(false);
     setEditingTask(null);
     loadTasks();
-    loadStats();
     loadAllTasks();
   }
 
