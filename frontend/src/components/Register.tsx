@@ -1,3 +1,4 @@
+//function imports
 import { useState } from "react";
 import { register, saveToken, saveUser } from "../api/authApi";
 
@@ -6,6 +7,7 @@ interface RegisterProps {
   onSwitchToLogin: () => void;
 }
 
+// Predefined security questions the user picks from
 const SECURITY_QUESTIONS = [
   "What is your pet's name?",
   "What city were you born in?",
@@ -13,12 +15,14 @@ const SECURITY_QUESTIONS = [
   "What was the name of your first school?",
   "What is your favorite movie?",
 ];
-
+// defining the segments of the registration page, and their subsequent error handling
 function Register({ onSuccess, onSwitchToLogin }: RegisterProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [securityQuestion, setSecurityQuestion] = useState(SECURITY_QUESTIONS[0]);
   const [securityAnswer, setSecurityAnswer] = useState("");
   const [loading, setLoading] = useState(false);
@@ -52,6 +56,7 @@ function Register({ onSuccess, onSwitchToLogin }: RegisterProps) {
       saveToken(response.token);
       saveUser(response.name, response.email);
       onSuccess(response.name);
+
     } catch (err: any) {
       if (err.response && err.response.data) {
         setError(err.response.data.error || "Registration failed");
@@ -89,20 +94,26 @@ function Register({ onSuccess, onSwitchToLogin }: RegisterProps) {
           />
 
           <label>Password</label>
-          <input
-            type="password"
-            placeholder="At least 6 characters"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div className="password-field">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="At least 6 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            
+          </div>
 
           <label>Confirm Password</label>
-          <input
-            type="password"
-            placeholder="Type your password again"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
+          <div className="password-field">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Type your password again"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            
+          </div>
 
           <label>Security Question</label>
           <select
