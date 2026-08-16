@@ -2,6 +2,8 @@
 
 **Live Deployment:** [https://smart-taskmaster.vercel.app/](https://smart-taskmaster.vercel.app/)
 
+**Video link:** https://drive.google.com/file/d/1JLF3KM7a4FiL5jSBU3W3H0Yz7fzjMglz/view?usp=sharing 
+
 ## Overview
 Smart TaskMaster is a full-stack, AI-augmented productivity application designed to help users organize, track, and manage their daily workflows. Featuring a secure authentication system, an intuitive Kanban-style dashboard, and AI-driven daily briefings, it ensures you stay focused on your highest-priority tasks.
 
