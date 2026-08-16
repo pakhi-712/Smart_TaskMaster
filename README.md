@@ -5,6 +5,22 @@
 ## Overview
 Smart TaskMaster is a full-stack, AI-augmented productivity application designed to help users organize, track, and manage their daily workflows. Featuring a secure authentication system, an intuitive Kanban-style dashboard, and AI-driven daily briefings, it ensures you stay focused on your highest-priority tasks.
 
+---
+
+## Features
+
+*   **Secure Access:** Full JWT-based authentication system (Login, Registration, Password Recovery).
+*   **Smart Dashboard:** Visual categorizations of tasks (Needs Attention, In Progress, Upcoming).
+*   **Advanced Task Management:** Create, edit, and delete tasks with custom priorities, categories, and due dates.
+*   **Responsive UI:** Clean, modern interface with a togglable dark/light mode for optimal accessibility.
+*   **Priority assignment:** Assigns priority to each task automatically if not assigned by the user themselves
+*   **Task Summary:** Gives a summary of all updates regarding completed and pending tasks whenever the dashboard gets loaded up.
+
+## Architecture
+
+![Architecture](assets/Architecture.png)
+
+
 ## Screenshots
 
 **Main Dashboard & AI Briefing**
@@ -16,15 +32,6 @@ Smart TaskMaster is a full-stack, AI-augmented productivity application designed
 **Secure User Authentication**
 ![Login](assets/Login.png)
 
----
-
-## Features
-
-*   **Secure Access:** Full JWT-based authentication system (Login, Registration, Password Recovery).
-*   **Smart Dashboard:** Visual categorizations of tasks (Needs Attention, In Progress, Upcoming).
-*   **AI Daily Briefing:** Automated, context-aware summaries of your pending workload to guide your daily focus.
-*   **Advanced Task Management:** Create, edit, and delete tasks with custom priorities, categories, and due dates.
-*   **Responsive UI:** Clean, modern interface with a togglable dark/light mode for optimal accessibility.
 
 ## Tech Stack
 
